@@ -56,8 +56,16 @@
                         console.log("Connection opened!");
                     };
                     ws.onmessage = ({ data }) => showMessage(data);
-                    ws.onclose = function () {
+                    ws.onclose = function (event) {
+                        if (event.wasClean) {
+                            console.log("Closed unexpectedly");
+                        }
+
                         ws = null;
+                    };
+
+                    ws.onerror = function (err) {
+                        console.err(err.message);
                     };
                 }
 
