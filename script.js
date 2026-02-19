@@ -1,7 +1,7 @@
-const msgObj = {
-    type: "",
-    msg: "",
-};
+// const msgObj = {
+//     type: "",
+//     msg: "",
+// };
 
 (function () {
     const sendBtn = document.querySelector("#send");
@@ -15,8 +15,8 @@ const msgObj = {
 
         if (parsedMessage.type == "input") {
             messageBox.value = `${parsedMessage.msg}`;
-        } else if (parsedMessage.type == "msg") {
-            messages.textContent += `\n${parsedMessage.msg}`;
+        } else if (parsedMessage.type == "message") {
+            messages.textContent += `${parsedMessage.msg}\n\n`;
         }
     }
 
@@ -44,14 +44,28 @@ const msgObj = {
         };
     }
 
-    messageBox.addEventListener("input", (event) => {
+    messageBox.addEventListener("keydown", (event) => {
         if (event.key == "Enter") {
             event.preventDefault();
-
-            if (!ws) {
-                showMessage("No WebSocket connection :(");
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                console.error("No WebSocket connection :(");
                 return;
             }
+            ws.send(
+                JSON.stringify({
+                    type: "message",
+                    msg: messageBox.value,
+                }),
+            );
+            // empty char at the end after enter
+            ws.send(
+                JSON.stringify({
+                    type: "input",
+                    msg: "",
+                }),
+            );
+            messages.textContent += `${messageBox.value}\n\n`;
+            messageBox.value = "";
         }
         if (event.key != "Enter") {
             ws.send(
@@ -61,14 +75,6 @@ const msgObj = {
                 }),
             );
         }
-
-        // ws.send(messageBox.value);
-        showMessage(
-            JSON.stringify({
-                type: "input",
-                msg: messageBox.value,
-            }),
-        );
     });
 
     init();
